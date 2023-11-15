@@ -3,7 +3,6 @@ BIN_TARGETS=$(addprefix $(OUTPUT_DIR)/, gardinar-darwin-amd64 gardinar-darwin-ar
 TARGETS=$(BIN_TARGETS:=.zip)
 
 all: $(TARGETS)
-	echo $(TARGETS)
 
 define build_binary
 $(OUTPUT_DIR)/gardinar-$1: GOOS=$2 GOARCH=$3

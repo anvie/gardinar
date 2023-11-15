@@ -1,0 +1,5 @@
+---
+secret_key: "MySecretKey"
+git_cmd: "/opt/homebrew/bin/git"
+post_update_script: "/Users/example/local/bin/test-post-update.sh"
+
