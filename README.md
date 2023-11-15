@@ -1,5 +1,7 @@
 # Gardinar
 
+![Gardinar](./gardinar.jpg)
+
 Gardinar is a lightweight tool designed to automate the update process on a server. It is especially useful in Continuous Integration (CI) environments or when you cannot use or want to avoid SSH for any reason. This tool uses a webhook to call from services like GitHub Actions and triggers the update process on the server without the need for SSH access.
 
 ## How Gardinar Works
