@@ -16,6 +16,7 @@ import (
 )
 
 type Config struct {
+	ListenPort       string `yaml:"listen_port"`
 	SecretKey        string `yaml:"secret_key"`
 	GitCmd           string `yaml:"git_cmd"`
 	PostUpdateScript string `yaml:"post_update_script"`
@@ -59,7 +60,8 @@ func ParseFlags() (string, error) {
 }
 
 func main() {
-	fmt.Println("Gardiniar v0.0.2")
+	fmt.Println("Gardinar v0.0.3")
+	listenPort := "8800"
 	gitCmd := ""
 	postUpdateScript := ""
 	mySecretKey := ""
@@ -70,6 +72,7 @@ func main() {
 		if err != nil {
 			log.Fatal("Cannot loading .env file")
 		}
+		listenPort = os.Getenv("LISTEN_PORT")
 		gitCmd = os.Getenv("GARDINAR_GIT_CMD")
 		postUpdateScript = os.Getenv("GARDINAR_POST_UPDATE_SCRIPT")
 		mySecretKey = os.Getenv("GARDINAR_SECRET_KEY")
@@ -82,6 +85,7 @@ func main() {
 			log.Fatal(err)
 		}
 
+		listenPort = cfg.ListenPort
 		gitCmd = cfg.GitCmd
 		postUpdateScript = cfg.PostUpdateScript
 		mySecretKey = cfg.SecretKey
@@ -128,15 +132,14 @@ func main() {
 
 		// update git repo
 		gitBranch := webhook.GitBranch
-		if gitBranch == "" {
-			gitBranch = "main"
-		}
-		out, err := gitUpdate(gitCmd, gitBranch, webhook.SourceDir)
-		if err != nil {
-			response := fmt.Sprintf(`{"error":"%s, %s"}`, out, err.Error())
-			http.Error(w, response, http.StatusInternalServerError)
-			log.Println(err)
-			return
+		if gitBranch != "" {
+			out, err := gitUpdate(gitCmd, gitBranch, webhook.SourceDir)
+			if err != nil {
+				response := fmt.Sprintf(`{"error":"%s, %s"}`, out, err.Error())
+				http.Error(w, response, http.StatusInternalServerError)
+				log.Println(err)
+				return
+			}
 		}
 
 		// run post update script
@@ -157,8 +160,8 @@ func main() {
 		}
 	})
 
-	fmt.Println("Server is running on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	fmt.Printf("Server is running on port %s\n", listenPort)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", listenPort), nil))
 }
 
 func gitUpdate(gitCmd string, gitBranch string, sourceDir string) (string, error) {
@@ -180,7 +183,7 @@ func runPostUpdateScript(postUpdateScript string, sourceDir string, postUpdatePa
 		log.Println(err)
 		return "", err
 	}
-	fmt.Printf("%s $ %s\n", postUpdateScript, sourceDir)
+	fmt.Printf("%s $ %s\n", sourceDir, postUpdateScript)
 	cmd := exec.Command("/bin/bash", append([]string{postUpdateScript}, postUpdateParams...)...)
 	cmd.Dir = sourceDir
 	out, err := cmd.Output()
