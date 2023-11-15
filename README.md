@@ -60,7 +60,24 @@ sudo systemctl start gardinar.service
 
 Gardinar will now be running as a service, ready to receive webhooks and perform updates on your server without the need for SSH access.
 
-For detailed instructions and examples, please refer to the [Gardinar Documentation](https://github.com/anvie/gardinar/documentation).
+## Testing
+
+Once running, you can test using curl:
+
+```bash
+curl -vvv -H "X-SECRET-KEY: MySecretKey" -H "Content-type: application/json" -X POST http://localhost:8080/webhook -d '
+{
+  "version": "1.0",
+  "commit_hash": "abc856def",
+  "source_dir": "/Users/example/source",
+  "git_branch": "main",
+  "post_update_params": [
+    "restart"
+  ]
+}
+'
+```
+
 
 ## Contributing
 
