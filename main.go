@@ -60,7 +60,7 @@ func ParseFlags() (string, error) {
 }
 
 func main() {
-	fmt.Println("Gardinar v0.0.4")
+	fmt.Println("Gardinar v0.0.5")
 	listenPort := "8800"
 	gitCmd := ""
 	postUpdateScript := ""
@@ -109,6 +109,7 @@ func main() {
 		if clientSecretKey != secretKey {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte(`{"result":"unauthorized"}`))
+			os.Exit(1)
 			return
 		}
 
@@ -117,6 +118,7 @@ func main() {
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
+			os.Exit(2)
 			return
 		}
 
@@ -127,6 +129,7 @@ func main() {
 			if _, err := w.Write([]byte(`{"error":"source_dir is required"}`)); err != nil {
 				log.Println(err)
 			}
+			os.Exit(3)
 			return
 		}
 
@@ -138,6 +141,7 @@ func main() {
 				response := fmt.Sprintf(`{"error":"%s, %s"}`, out, err.Error())
 				http.Error(w, response, http.StatusInternalServerError)
 				log.Println(err)
+				os.Exit(4)
 				return
 			}
 		}
@@ -150,6 +154,7 @@ func main() {
 				if _, err := w.Write([]byte(`{"error":"` + out + ", " + err.Error() + `"}`)); err != nil {
 					log.Println(err)
 				}
+				os.Exit(5)
 				return
 			}
 		}
