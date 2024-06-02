@@ -60,7 +60,7 @@ func ParseFlags() (string, error) {
 }
 
 func main() {
-	fmt.Println("Gardinar v0.0.5")
+	fmt.Println("Gardinar v0.0.6")
 	listenPort := "8800"
 	gitCmd := ""
 	postUpdateScript := ""
@@ -171,13 +171,18 @@ func main() {
 
 func gitUpdate(gitCmd string, gitBranch string, sourceDir string) (string, error) {
 	fmt.Printf("%s $ %s pull origin %s\n", sourceDir, gitCmd, gitBranch)
+
 	cmd := exec.Command(gitCmd, "checkout", "-f", gitBranch)
+	cmd.Dir = sourceDir
+
 	if _, err := cmd.Output(); err != nil {
 		log.Println("Error during git checkout.", err)
 		return "", err
 	}
+
 	cmd = exec.Command(gitCmd, "pull", "origin", gitBranch)
 	cmd.Dir = sourceDir
+
 	out, err := cmd.Output()
 	if err != nil {
 		log.Println("Error during git pull.", err)
