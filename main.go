@@ -1,6 +1,7 @@
 package main
 
 import (
+	//"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -60,7 +61,7 @@ func ParseFlags() (string, error) {
 }
 
 func main() {
-	fmt.Println("Gardinar v0.0.7-rc1")
+	fmt.Println("Gardinar v0.0.7-rc5")
 	listenPort := "8800"
 	gitCmd := ""
 	postUpdateScript := ""
@@ -113,13 +114,42 @@ func main() {
 			return
 		}
 
+		// clone Body to _body var
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			fmt.Println("Error reading body")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
 		var webhook Webhook
-		err := json.NewDecoder(r.Body).Decode(&webhook)
+		err = json.Unmarshal(body, &webhook)
 		if err != nil {
 			log.Println(err)
-			w.WriteHeader(http.StatusBadRequest)
-			// os.Exit(2)
-			return
+
+			// try GhWorkflowWebhook
+			var ghWebhook GhWorkflowWebhook
+			err := json.Unmarshal(body, &ghWebhook)
+			if err != nil {
+				webhook = ghWebhook.Data
+			} else {
+				fmt.Println("Error decoding webhook")
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+		}
+
+		if webhook.GitBranch == "" {
+			// try GhWorkflowWebhook
+			var ghWebhook GhWorkflowWebhook
+			err := json.Unmarshal(body, &ghWebhook)
+			if err != nil {
+				fmt.Println("Error decoding webhook")
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			webhook = ghWebhook.Data
+
 		}
 
 		fmt.Printf("%+v\n", webhook)
@@ -216,4 +246,15 @@ type Webhook struct {
 	GitBranch        string   `json:"git_branch"`
 	SourceDir        string   `json:"source_dir"`
 	PostUpdateParams []string `json:"post_update_params"`
+}
+
+type GhWorkflowWebhook struct {
+	Event     string  `json:"event"`
+	Ref       string  `json:"ref"`
+	Repo      string  `json:"repository"`
+	Commit    string  `json:"head_commit"`
+	Head      string  `json:"head"`
+	Workflow  string  `json:"workflow"`
+	RequestID string  `json:"requestID"`
+	Data      Webhook `json:"data"`
 }
