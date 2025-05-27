@@ -25,7 +25,6 @@ type Config struct {
 func NewConfig(configPath string) (*Config, error) {
 	config := &Config{}
 	yamlFile, err := ioutil.ReadFile(configPath)
-
 	if err != nil {
 		panic(err)
 	}
@@ -56,11 +55,17 @@ func ParseFlags() (string, error) {
 		return "", err
 	}
 
+	flag.StringVar(&configPath, "config", "./config.yaml", "path to config file")
+	flag.Parse()
+
+	if err := ValidateConfigPath(configPath); err != nil {
+		return "", err
+	}
 	return configPath, nil
 }
 
 func main() {
-	fmt.Println("Gardinar v0.0.7-rc5")
+	fmt.Println("Gardinar v0.0.8")
 	listenPort := "8800"
 	gitCmd := ""
 	postUpdateScript := ""
@@ -96,7 +101,6 @@ func main() {
 	fmt.Println("POST_UPDATE_SCRIPT:", postUpdateScript)
 
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
-
 		// Get X-SECRET-KEY from header
 		clientSecretKey := strings.TrimSpace(r.Header.Get("X-SECRET-KEY"))
 
