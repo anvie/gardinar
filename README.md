@@ -29,7 +29,7 @@ Gardinar offers several features designed to make the update process efficient a
 
 To get started with Gardinar, follow these simple steps:
 
-1. Download the binary release that corresponds to your operating system and architecture from the [Releases](https://github.com/anvie/gardinar/releases) page. 
+1. Download the binary release that corresponds to your operating system and architecture from the [Releases](https://github.com/anvie/gardinar/releases) page.
 2. Extract the downloaded binary to a desired location on your server.
 3. Create a `.env` file in the same directory as the binary. You can use the `example.env` file as a template. Modify the necessary variables according to your setup.
 4. Optionally, configure the update steps and behavior in the `config.yaml` file located in the same directory.
@@ -51,7 +51,7 @@ Group=yourgroup
 WantedBy=multi-user.target
 ```
 
-Make sure to update the `ExecStart` and `WorkingDirectory` paths to match your setup. 
+Make sure to update the `ExecStart` and `WorkingDirectory` paths to match your setup.
 
 After creating the service unit file, you can enable and start the service using the following commands:
 
@@ -80,6 +80,36 @@ curl -vvv -H "X-SECRET-KEY: MySecretKey" -H "Content-type: application/json" -X 
 '
 ```
 
+## Github Action Example
+
+```yaml
+name: deploy
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - "README.md"
+      - "docs/**"
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Gardinar
+        run: |
+          curl -vvv -H "X-SECRET-KEY: ${{ secrets.GARDINAR_SECRET }}" -H "Content-type: application/json" -X POST https://gardinar-endpoint.example.com/webhook -d '
+          {
+            "version": "1.0",
+            "commit_hash": "abc856def",
+            "source_dir": "/frontend",
+            "git_branch": "main",
+            "post_update_params": [
+              "restart"
+            ]
+          }
+          '
+```
 
 ## Contributing
 
