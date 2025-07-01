@@ -1,6 +1,6 @@
----
-listen_port: 8800
-secret_key: "MySecretKey"
-git_cmd: "/opt/homebrew/bin/git"
-post_update_script: "/Users/example/local/bin/test-post-update.sh"
-
+listen_port: "8800"
+secret_key: "YourSecretKey"
+tasks:
+  git-update: "/path/to/your/git-update-script.sh"
+  deploy-frontend: "/path/to/your/deploy-script.sh"
+  restart-service: "systemctl restart my-app"
