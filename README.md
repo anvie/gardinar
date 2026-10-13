@@ -112,6 +112,19 @@ jobs:
           '
 ```
 
+## Response Contract
+
+The webhook response reflects the outcome of the task command. `200` is returned only when the task command exits `0`; any non-zero exit is reported as `500`. Error bodies never include task output or the executed command, so CI logs cannot leak server details.
+
+| Status | Body | Meaning |
+| ------ | ---- | ------- |
+| `200` | `{"result":"success","state":"succeeded"}` | Task command finished successfully. |
+| `400` | `{"error":"invalid request body"}` / `{"error":"invalid webhook payload"}` / `{"error":"task not found"}` | Request could not be processed. |
+| `401` | `{"error":"unauthorized"}` | Missing or wrong `X-SECRET-KEY`. |
+| `500` | `{"state":"failed","failed_step":"task","error":"task execution failed"}` | Task command exited non-zero. |
+
+Because a task is a shell command, chain its steps with `&&` (for example `git pull && build && restart && healthcheck`) so that a `200` really means the whole sequence succeeded. Use `curl --fail-with-body` in CI so a non-`200` response fails the job.
+
 ## Contributing
 
 Contributions to Gardinar are always welcome! Whether it's bug fixes, new features, or documentation improvements, feel free to submit a pull request. Please make sure to follow the project's code style guidelines and include tests for any new functionality.
